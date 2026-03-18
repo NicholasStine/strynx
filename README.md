@@ -1,5 +1,23 @@
 # Strynx
 
+## Developer Notes
+I practice a few different instruments, for a few different reasons. As a kid we had a cheap yamaha keyboard (you know, the one with the "HUH!" sound effect?) and my dad's old acoustic guitar. I used to noodle a lot on both, and I took guitar lessons, but like a lot of kids, when it came time to read sheet music, I gave up!
+
+Now, in the last year, I've picked up a bass, a cheap yamaha keyboard of my own, I still have my guitar, and I rent a cello from the local music store. At that same music store, I tried piano lessons, but again I let go of learning to read music in favor of learning to play by ear. Honestly, my favorite thing to do is play along with the theme songs of shows (shoutout to Scavengers Reign).
+
+Switching between instruments serves two big purposes:
+
+1. it serves to force me into thinking in terms of steps and shapes.
+2. it serves my ego lol
+
+Recently I had the idea to utilize claude to build a clone of the usual piano visualizer that accepts MIDI import.
+
+This idea was inspired by my use of Songsterr to transcribe youtube videos into guitar / bass tabs. It's great for guitar and bass, but tabs don't really work for piano or cello. I could use garageband to convert the MIDI into sheet music, but I am a coder.. so why do myself what code can do for me?
+
+Everything beyond this point is AI generated.
+
+## Let Claude Cook
+
 A browser-based MIDI practice visualization tool built with Next.js. Load any `.mid` file and watch notes play out on an animated piano keyboard (cello fingerboard coming soon). MIDI is the source of truth — each instrument view is a pure renderer of note events over time.
 
 ## Tech Stack
