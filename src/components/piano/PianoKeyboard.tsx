@@ -94,14 +94,14 @@ export default function PianoKeyboard({ activeNotes }: Props) {
   const activeSet = new Set(activeNotes);
 
   return (
-    <div className="w-full overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-100 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-      <svg
-        width={SVG_WIDTH}
-        height={SVG_HEIGHT}
-        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
-        xmlns="http://www.w3.org/2000/svg"
-        aria-label="Piano keyboard"
-      >
+    <svg
+      width={SVG_WIDTH}
+      height={SVG_HEIGHT}
+      viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Piano keyboard"
+      style={{ display: "block" }}
+    >
         {/* White keys — render first so black keys appear on top */}
         {whites.map((key) => {
           const active = activeSet.has(key.midi);
@@ -182,7 +182,6 @@ export default function PianoKeyboard({ activeNotes }: Props) {
             </g>
           );
         })}
-      </svg>
-    </div>
+    </svg>
   );
 }

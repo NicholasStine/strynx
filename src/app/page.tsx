@@ -3,10 +3,11 @@
 import MidiImport from "@/components/MidiImport";
 import PlaybackControls from "@/components/PlaybackControls";
 import PianoView from "@/components/piano/PianoView";
+import CelloView from "@/components/cello/CelloView";
 import { usePlaybackStore } from "@/store/playback";
 
 export default function Home() {
-  const { events } = usePlaybackStore();
+  const { events, instrument, setInstrument } = usePlaybackStore();
   const hasEvents = events.length > 0;
 
   return (
@@ -40,10 +41,28 @@ export default function Home() {
               <PlaybackControls />
             </section>
             <section>
-              <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                Instrument
-              </h2>
-              <PianoView />
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                  Instrument
+                </h2>
+                {/* Instrument selector */}
+                <div className="flex rounded-lg border border-zinc-200 bg-zinc-100 p-0.5 dark:border-zinc-700 dark:bg-zinc-800">
+                  {(["piano", "cello"] as const).map((inst) => (
+                    <button
+                      key={inst}
+                      onClick={() => setInstrument(inst)}
+                      className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+                        instrument === inst
+                          ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white"
+                          : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                      }`}
+                    >
+                      {inst}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {instrument === "piano" ? <PianoView /> : <CelloView />}
             </section>
           </>
         )}
