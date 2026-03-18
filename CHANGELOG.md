@@ -4,6 +4,22 @@ All notable changes to Strynx will be documented here.
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-03-17
+
+### Added
+
+- **Falling-note animation** (`src/components/piano/FallingNotes.tsx`) — waterfall of approaching notes rendered above the piano keyboard, horizontally aligned to each key. Lookahead window is 2 seconds; note opacity and position animate in sync with `currentMs`.
+- **Cello fingerboard renderer** (`src/components/cello/CelloFingerboard.tsx`) — SVG fingerboard with four string lanes (C2–A5 range). Maps each active MIDI pitch to a string and finger position using a default fingering table in `src/lib/cello.ts`; labels drawn at finger positions.
+- **Cello falling-note animation** (`src/components/cello/CelloFallingNotes.tsx`) — falling notes aligned to cello string lanes, mirroring the piano falling-note approach.
+- **Cello view** (`src/components/cello/CelloView.tsx`) — wires the timing engine to the cello fingerboard and falling-note renderers.
+- **Instrument switcher** (`src/app/page.tsx`) — pill toggle to switch between Piano and Cello views; selection stored in Zustand (`instrument` field).
+- **Cello fingering library** (`src/lib/cello.ts`) — pitch-to-string/position lookup table covering the standard cello range.
+
+### Changed
+
+- `PianoKeyboard` wrapper `<div>` removed; the SVG now composes directly into a shared `overflow-x-auto` scroll container in `PianoView` so falling notes and keyboard scroll as one unit.
+- `PianoView` now wraps `FallingNotes` + `PianoKeyboard` in a single bordered scroll container with a 3 px gap between them.
+
 ## [0.1.0] — 2026-03-17
 
 ### Added

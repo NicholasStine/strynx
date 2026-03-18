@@ -18,7 +18,7 @@ Everything beyond this point is AI generated.
 
 ## Let Claude Cook
 
-A browser-based MIDI practice visualization tool built with Next.js. Load any `.mid` file and watch notes play out on an animated piano keyboard (cello fingerboard coming soon). MIDI is the source of truth — each instrument view is a pure renderer of note events over time.
+A browser-based MIDI practice visualization tool built with Next.js. Load any `.mid` file and watch notes play out on an animated piano keyboard or cello fingerboard. MIDI is the source of truth — each instrument view is a pure renderer of note events over time.
 
 ## Tech Stack
 
@@ -30,6 +30,7 @@ A browser-based MIDI practice visualization tool built with Next.js. Load any `.
 | State | Zustand 5 |
 | MIDI parsing | `@tonejs/midi` |
 | Audio synthesis | Tone.js 15 (Sampler + Transport) |
+| Cello fingering | `src/lib/cello.ts` (pitch → string/position table) |
 
 ## Architecture
 
@@ -63,6 +64,7 @@ MIDI file
 ┌──────────────────────────────────────┐
 │  3. Instrument Renderer              │
 │  src/components/piano/PianoView.tsx  │
+│  src/components/cello/CelloView.tsx  │
 │  Subscribes to currentMs, derives    │
 │  active notes, re-renders on tick    │
 └──────────────────────────────────────┘
@@ -111,13 +113,19 @@ src/
 ├── components/
 │   ├── MidiImport.tsx      # Drag-and-drop / file picker for .mid files
 │   ├── PlaybackControls.tsx# Play/pause, scrubber, BPM, transpose, loop
-│   └── piano/
-│       ├── PianoKeyboard.tsx  # SVG 88-key keyboard, highlights active notes
-│       └── PianoView.tsx      # Wires timing engine → PianoKeyboard
+│   ├── piano/
+│   │   ├── PianoKeyboard.tsx  # SVG 88-key keyboard, highlights active notes
+│   │   ├── FallingNotes.tsx   # Falling-note waterfall, aligned to keyboard
+│   │   └── PianoView.tsx      # Wires timing engine → FallingNotes + PianoKeyboard
+│   └── cello/
+│       ├── CelloFingerboard.tsx  # SVG fingerboard with string lanes + finger labels
+│       ├── CelloFallingNotes.tsx # Falling-note animation for cello view
+│       └── CelloView.tsx         # Wires timing engine → cello renderers
 ├── lib/
 │   ├── midi.ts             # parseMidi() → MidiEvent[]
 │   ├── playback-engine.ts  # RAF-based timing, tempo, loop
-│   └── audio-engine.ts     # Tone.js sampler, mirrors PlaybackEngine API
+│   ├── audio-engine.ts     # Tone.js sampler, mirrors PlaybackEngine API
+│   └── cello.ts            # Pitch → string/fret position fingering table
 └── store/
     └── playback.ts         # Zustand store — single source of UI state
 ```
@@ -132,9 +140,9 @@ src/
 | Playback engine (RAF, tempo, loop) | Done |
 | Audio engine (Tone.js sampler, Salamander piano) | Done |
 | Mute toggle (audio on/off independent of visual) | Done |
-| Falling-note animation on piano | Planned |
-| Cello fingerboard renderer | Planned |
-| Cello play-along animation | Planned |
+| Falling-note animation on piano | Done |
+| Cello fingerboard renderer | Done |
+| Cello play-along animation | Done |
 
 ## Instrument Renderer Contract
 
