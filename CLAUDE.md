@@ -76,10 +76,12 @@ npm install tone
 - Add an `audioEnabled: boolean` toggle (default `true`) so users can mute synthesis without stopping visual playback
 
 ### 3. Instrument Renderer Layer
-Subscribes to the timing engine's current-time output and re-renders on each animation frame. Two renderers planned:
+Subscribes to the timing engine's current-time output and re-renders on each animation frame. Renderers built:
 
-- **Piano** — 2D keyboard (SVG or Canvas), highlights active keys, draws falling notes above, shows note name labels on keys
-- **Cello** — stylized fingerboard with string lanes; maps pitch → finger position using a default fingering table; labels drawn at finger positions
+- **Piano** — 2D keyboard (SVG or Canvas), highlights active keys, draws falling notes above, shows note name labels on keys ✓
+- **Cello** — stylized fingerboard with string lanes; maps pitch → finger position using a default fingering table; labels drawn at finger positions ✓
+- **Guitar** — see Phase 2 below
+- **Bass** — see Phase 2 below
 
 Renderers are isolated: adding a new instrument means implementing one renderer component against the shared note-event stream.
 
@@ -96,14 +98,59 @@ Managed with **Zustand**. Stores:
 Three top-level areas:
 - **MIDI import panel** — file upload/drag-drop
 - **Playback controls** — play/pause, scrubber, BPM, transpose, loop markers
-- **Instrument viewport** — animated piano or cello fingerboard
+- **Instrument viewport** — animated piano, cello fingerboard, guitar fretboard, or bass fretboard
 
 ## MVP Build Order
 
 1. MIDI upload + parsing → normalized event list ✓
 2. Piano renderer with static note labels ✓
 3. Playback engine (tempo, transpose, loop) ✓
-4. Audio engine (Tone.js sampler, note scheduling, mute toggle)
-5. Falling-note animation on piano
-6. Cello fingerboard renderer with mapped positions and labels
-7. Cello play-along animation
+4. Audio engine (Tone.js sampler, note scheduling, mute toggle) ✓
+5. Falling-note animation on piano ✓
+6. Cello fingerboard renderer with mapped positions and labels ✓
+7. Cello play-along animation ✓
+
+## Phase 2: Guitar & Bass
+
+### Guitar Renderer
+
+**Files:**
+- `src/lib/guitar.ts` — pitch → string/fret position lookup table (standard tuning: E2 A2 D3 G3 B3 E4); covers frets 0–24
+- `src/components/guitar/GuitarFretboard.tsx` — SVG fretboard, 6 string lanes, fret markers at standard positions (3, 5, 7, 9, 12, 15, 17, 19, 21); highlights active finger positions with dot + note label
+- `src/components/guitar/GuitarFallingNotes.tsx` — falling notes aligned to string lanes
+- `src/components/guitar/GuitarView.tsx` — wires timing engine → `GuitarFallingNotes` + `GuitarFretboard`
+
+**Fingering rules:**
+- Map each pitch to the lowest-fret position first (open strings preferred)
+- Where multiple strings share the same pitch, prefer the thinnest string (highest-numbered in standard ordering)
+- `guitar.ts` should export the same shape as `cello.ts`: `getFretPosition(pitch, tuning?) → { string: number, fret: number } | null`
+
+**Tuning:** default standard tuning; the lookup table should accept an optional `tuning` array so alternate tunings (drop D, etc.) can be supported later without changing the renderer.
+
+### Bass Renderer
+
+**Files:**
+- `src/lib/bass.ts` — pitch → string/fret lookup for 4-string bass (standard tuning: E1 A1 D2 G2); covers frets 0–24
+- `src/components/bass/BassFretboard.tsx` — SVG fretboard, 4 string lanes, same fret marker positions as guitar
+- `src/components/bass/BassFallingNotes.tsx` — falling notes aligned to bass string lanes
+- `src/components/bass/BassView.tsx` — wires timing engine → `BassFallingNotes` + `BassFretboard`
+
+**Fingering rules:** same lowest-fret-first / prefer-thinnest-string logic as guitar. Export `getFretPosition(pitch, tuning?)` from `bass.ts`.
+
+### Shared Fretboard Considerations
+
+Guitar and bass fretboards are structurally identical (string lanes + fret grid + markers); only string count and tuning differ. If the two renderers end up sharing more than ~30% of their SVG logic, extract a `Fretboard` base component parameterized by `stringCount` and `tuning` rather than duplicating. Do not extract prematurely — wait until both renderers exist.
+
+### Store Changes
+
+Add `"guitar"` and `"bass"` to the `instrument` union in `src/store/playback.ts`. No other store changes required.
+
+### Build Order
+
+1. `src/lib/guitar.ts` — fingering table + `getFretPosition`
+2. `GuitarFretboard` — static SVG with fret markers, no animation
+3. `GuitarView` + instrument switcher update — verify static render
+4. `GuitarFallingNotes` — animate notes above fretboard
+5. `src/lib/bass.ts` — fingering table + `getFretPosition`
+6. `BassFretboard` + `BassFallingNotes` + `BassView`
+7. Evaluate shared `Fretboard` extraction
