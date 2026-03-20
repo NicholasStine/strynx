@@ -2,11 +2,14 @@ import { create } from "zustand";
 import { MidiEvent } from "@/lib/midi";
 import { PlaybackEngine } from "@/lib/playback-engine";
 import { AudioEngine } from "@/lib/audio-engine";
+import { quantizeEvents } from "@/lib/quantize";
+import { detectChords, ChordEvent } from "@/lib/chords";
 
-type Instrument = "piano" | "cello";
+type Instrument = "piano" | "cello" | "guitar" | "bass";
 
 type PlaybackState = {
   events: MidiEvent[];
+  chordEvents: ChordEvent[];
   instrument: Instrument;
   fileName: string | null;
   currentMs: number;
@@ -45,6 +48,7 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => {
 
   return {
     events: [],
+    chordEvents: [],
     instrument: "piano",
     fileName: null,
     currentMs: 0,
@@ -64,8 +68,13 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => {
         events.length > 0 ? Math.max(...events.map((e) => e.endMs)) : 0;
       engine?.setDuration(duration);
       engine?.seek(0);
+
+      const quantized = quantizeEvents(events, 10);
+      const chordEvents = detectChords(quantized);
+
       set({
         events,
+        chordEvents,
         fileName,
         duration,
         currentMs: 0,

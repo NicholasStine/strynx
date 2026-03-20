@@ -145,12 +145,46 @@ Guitar and bass fretboards are structurally identical (string lanes + fret grid 
 
 Add `"guitar"` and `"bass"` to the `instrument` union in `src/store/playback.ts`. No other store changes required.
 
+### Quantization & Chord Detection
+
+Before rendering fretboard positions, notes are grouped into chords and snapped to a rhythmic grid. This ensures simultaneous notes are displayed and played together as a unit.
+
+**Files:**
+- `src/lib/quantize.ts` — quantizes `MidiEvent[]` to the nearest rhythmic grid division
+- `src/lib/chords.ts` — groups quantized events into chords; exports a `ChordEvent` type
+
+**Quantization (`quantize.ts`):**
+- Accept `MidiEvent[]` plus a `gridMs` parameter (e.g. 10 ms default, or derived from tempo + subdivision)
+- Snap each event's `startMs` to the nearest multiple of `gridMs`
+- Return a new `MidiEvent[]` — do not mutate the original
+- Export `quantizeEvents(events: MidiEvent[], gridMs: number): MidiEvent[]`
+
+**Chord detection (`chords.ts`):**
+```ts
+type ChordEvent = {
+  startMs: number         // quantized onset shared by all notes in the chord
+  endMs: number           // max endMs across member notes
+  notes: MidiEvent[]      // all simultaneous notes
+}
+```
+- Group events whose `startMs` values fall within a configurable `windowMs` (default 20 ms) after quantization
+- Export `detectChords(events: MidiEvent[], windowMs?: number): ChordEvent[]`
+- Renderers that care about chords (guitar, bass) consume `ChordEvent[]` instead of raw `MidiEvent[]`
+
+**Integration:**
+- `PlaybackEngine` pre-processes parsed events through `quantizeEvents` → `detectChords` and stores both `MidiEvent[]` (for piano/cello) and `ChordEvent[]` (for guitar/bass) in the Zustand store
+- Add `chordEvents: ChordEvent[]` to the playback store alongside `midiEvents`
+- Guitar/bass falling-notes and fretboard highlight components subscribe to `chordEvents`; each `ChordEvent` triggers simultaneous multi-dot rendering on all member pitches
+
 ### Build Order
 
-1. `src/lib/guitar.ts` — fingering table + `getFretPosition`
-2. `GuitarFretboard` — static SVG with fret markers, no animation
-3. `GuitarView` + instrument switcher update — verify static render
-4. `GuitarFallingNotes` — animate notes above fretboard
-5. `src/lib/bass.ts` — fingering table + `getFretPosition`
-6. `BassFretboard` + `BassFallingNotes` + `BassView`
-7. Evaluate shared `Fretboard` extraction
+1. `src/lib/quantize.ts` — grid-snap utility + tests
+2. `src/lib/chords.ts` — chord grouping + `ChordEvent` type + tests
+3. Store integration — add `chordEvents` slice, run quantize → detect on MIDI load
+4. `src/lib/guitar.ts` — fingering table + `getFretPosition`
+5. `GuitarFretboard` — static SVG with fret markers, no animation
+6. `GuitarView` + instrument switcher update — verify static render
+7. `GuitarFallingNotes` — animate chords above fretboard (consumes `ChordEvent[]`)
+8. `src/lib/bass.ts` — fingering table + `getFretPosition`
+9. `BassFretboard` + `BassFallingNotes` + `BassView`
+10. Evaluate shared `Fretboard` extraction

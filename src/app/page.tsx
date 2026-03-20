@@ -4,11 +4,22 @@ import MidiImport from "@/components/MidiImport";
 import PlaybackControls from "@/components/PlaybackControls";
 import PianoView from "@/components/piano/PianoView";
 import CelloView from "@/components/cello/CelloView";
+import GuitarView from "@/components/guitar/GuitarView";
+import BassView from "@/components/bass/BassView";
 import { usePlaybackStore } from "@/store/playback";
 
 export default function Home() {
   const { events, instrument, setInstrument } = usePlaybackStore();
   const hasEvents = events.length > 0;
+
+  function renderInstrument() {
+    switch (instrument) {
+      case "piano":  return <PianoView />;
+      case "cello":  return <CelloView />;
+      case "guitar": return <GuitarView />;
+      case "bass":   return <BassView />;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
@@ -19,7 +30,7 @@ export default function Home() {
             Strynx
           </h1>
           <p className="mt-2 text-base text-zinc-500 dark:text-zinc-400">
-            MIDI visualizer and practice tool for piano and cello
+            MIDI visualizer and practice tool for piano, cello, guitar, and bass
           </p>
         </header>
 
@@ -47,7 +58,7 @@ export default function Home() {
                 </h2>
                 {/* Instrument selector */}
                 <div className="flex rounded-lg border border-zinc-200 bg-zinc-100 p-0.5 dark:border-zinc-700 dark:bg-zinc-800">
-                  {(["piano", "cello"] as const).map((inst) => (
+                  {(["piano", "cello", "guitar", "bass"] as const).map((inst) => (
                     <button
                       key={inst}
                       onClick={() => setInstrument(inst)}
@@ -62,7 +73,7 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-              {instrument === "piano" ? <PianoView /> : <CelloView />}
+              {renderInstrument()}
             </section>
           </>
         )}
