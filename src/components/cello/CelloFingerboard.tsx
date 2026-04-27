@@ -99,6 +99,28 @@ export default function CelloFingerboard({
       onMouseUp={clearDrag}
       onMouseLeave={clearDrag}
     >
+      <defs>
+        <linearGradient id="cello-active-grad" x1="0%" y1="0%" x2="0%" y2="100%" gradientUnits="objectBoundingBox">
+          <stop offset="0%"   stopColor="#000000" />
+          <stop offset="1%"   stopColor="#ddb6ff" />
+          <stop offset="3%"   stopColor="#000000" />
+          <stop offset="4%"   stopColor="#a21caf" />
+          <stop offset="17%"  stopColor="#3d0040" />
+          <stop offset="19%"  stopColor="#000000" />
+          <stop offset="20%"  stopColor="#5b21b6" />
+          <stop offset="33%"  stopColor="#1e0a3c" />
+          <stop offset="35%"  stopColor="#000000" />
+          <stop offset="36%"  stopColor="#0f766e" />
+          <stop offset="49%"  stopColor="#042f2e" />
+          <stop offset="51%"  stopColor="#000000" />
+          <stop offset="52%"  stopColor="#065f46" />
+          <stop offset="68%"  stopColor="#022c22" />
+          <stop offset="70%"  stopColor="#000000" />
+          <stop offset="71%"  stopColor="#052e16" />
+          <stop offset="100%" stopColor="#000000" />
+        </linearGradient>
+      </defs>
+
       {/* Background */}
       <rect width={CELLO_SVG_WIDTH} height={BOARD_HEIGHT} fill="#1c1917" />
 
@@ -193,20 +215,26 @@ export default function CelloFingerboard({
       })}
 
       {/* Active note markers */}
-      {activeFingerings.map(({ pitch, fingering }) => {
+      {activeFingerings
+        .filter((item, idx, arr) =>
+          arr.findIndex(
+            (o) => o.fingering.stringIndex === item.fingering.stringIndex && o.fingering.position === item.fingering.position
+          ) === idx
+        )
+        .map(({ pitch, fingering }) => {
         const cx = CELLO_STRING_X[fingering.stringIndex];
         const cy = posY(fingering.position);
         const label = noteNameShort(pitch);
         const isOpen = fingering.position === 0;
 
         return (
-          <g key={`${pitch}-${fingering.stringIndex}-${fingering.position}`}>
+          <g key={`active-${fingering.stringIndex}-${fingering.position}`}>
             <circle
               cx={cx}
               cy={cy}
               r={12}
-              fill={isOpen ? "transparent" : "#10b981"}
-              stroke="#10b981"
+              fill={isOpen ? "transparent" : "url(#cello-active-grad)"}
+              stroke={isOpen ? "#d946ef" : "none"}
               strokeWidth={isOpen ? 2.5 : 0}
             />
             <text
@@ -216,7 +244,7 @@ export default function CelloFingerboard({
               fontSize={9}
               fontFamily="system-ui, sans-serif"
               fontWeight="700"
-              fill={isOpen ? "#10b981" : "#ffffff"}
+              fill={isOpen ? "#d946ef" : "#ffffff"}
               pointerEvents="none"
             >
               {isOpen ? "O" : label}
@@ -249,7 +277,7 @@ export default function CelloFingerboard({
             pointerEvents="none"
           />
           {[-7, 0, 7].map((dx) => (
-            <circle key={dx} cx={midX + dx} cy={regionTop} r={1.5} fill="#c7d2fe" pointerEvents="none" />
+            <circle key={`top-${dx}`} cx={midX + dx} cy={regionTop} r={1.5} fill="#c7d2fe" pointerEvents="none" />
           ))}
 
           {/* Bottom (max position) handle */}
@@ -273,7 +301,7 @@ export default function CelloFingerboard({
             pointerEvents="none"
           />
           {[-7, 0, 7].map((dx) => (
-            <circle key={dx} cx={midX + dx} cy={regionBot} r={1.5} fill="#c7d2fe" pointerEvents="none" />
+            <circle key={`bot-${dx}`} cx={midX + dx} cy={regionBot} r={1.5} fill="#c7d2fe" pointerEvents="none" />
           ))}
         </>
       )}

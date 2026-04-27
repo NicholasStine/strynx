@@ -110,6 +110,28 @@ export default function PianoKeyboard({ activeNotes, ghostNotes = [] }: Props) {
       aria-label="Piano keyboard"
       style={{ display: "block" }}
     >
+      <defs>
+        <linearGradient id="piano-active-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#000000" />
+          <stop offset="1%"   stopColor="#ddb6ff" />
+          <stop offset="3%"   stopColor="#000000" />
+          <stop offset="4%"   stopColor="#a21caf" />
+          <stop offset="17%"  stopColor="#3d0040" />
+          <stop offset="19%"  stopColor="#000000" />
+          <stop offset="20%"  stopColor="#5b21b6" />
+          <stop offset="33%"  stopColor="#1e0a3c" />
+          <stop offset="35%"  stopColor="#000000" />
+          <stop offset="36%"  stopColor="#0f766e" />
+          <stop offset="49%"  stopColor="#042f2e" />
+          <stop offset="51%"  stopColor="#000000" />
+          <stop offset="52%"  stopColor="#065f46" />
+          <stop offset="68%"  stopColor="#022c22" />
+          <stop offset="70%"  stopColor="#000000" />
+          <stop offset="71%"  stopColor="#052e16" />
+          <stop offset="100%" stopColor="#000000" />
+        </linearGradient>
+      </defs>
+
         {/* White keys — render first so black keys appear on top */}
         {whites.map((key) => {
           const active = activeSet.has(key.midi);
@@ -122,8 +144,8 @@ export default function PianoKeyboard({ activeNotes, ghostNotes = [] }: Props) {
                 width={WHITE_W - 1}
                 height={WHITE_H - 1}
                 rx={3}
-                fill={active ? "#10b981" : ghostOpacity !== undefined ? "#6366f1" : "#ffffff"}
-                stroke={active ? "#059669" : ghostOpacity !== undefined ? "#4338ca" : "#a1a1aa"}
+                fill={active ? "url(#piano-active-grad)" : ghostOpacity !== undefined ? "#6366f1" : "#ffffff"}
+                stroke={active ? "#7c3aed" : ghostOpacity !== undefined ? "#4338ca" : "#a1a1aa"}
                 strokeWidth={1}
                 opacity={ghostOpacity !== undefined ? ghostOpacity : 1}
               />
@@ -172,8 +194,8 @@ export default function PianoKeyboard({ activeNotes, ghostNotes = [] }: Props) {
                 width={BLACK_W - 1}
                 height={BLACK_H - 1}
                 rx={2}
-                fill={active ? "#10b981" : ghostOpacity !== undefined ? "#6366f1" : "#18181b"}
-                stroke={active ? "#059669" : ghostOpacity !== undefined ? "#4338ca" : "#3f3f46"}
+                fill={active ? "url(#piano-active-grad)" : ghostOpacity !== undefined ? "#6366f1" : "#18181b"}
+                stroke={active ? "#7c3aed" : ghostOpacity !== undefined ? "#4338ca" : "#3f3f46"}
                 strokeWidth={1}
                 opacity={ghostOpacity !== undefined ? ghostOpacity : 1}
               />
