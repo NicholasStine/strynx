@@ -86,12 +86,20 @@ function buildKeys(): { whites: KeyInfo[]; blacks: KeyInfo[] } {
 
 const { whites, blacks } = buildKeys();
 
+type GhostNote = { pitch: number; opacity: number };
+
 type Props = {
   activeNotes: number[];
+  ghostNotes?: GhostNote[];
 };
 
-export default function PianoKeyboard({ activeNotes }: Props) {
+export default function PianoKeyboard({ activeNotes, ghostNotes = [] }: Props) {
   const activeSet = new Set(activeNotes);
+  const ghostMap = new Map<number, number>();
+  for (const g of ghostNotes) {
+    const existing = ghostMap.get(g.pitch);
+    if (existing === undefined || g.opacity > existing) ghostMap.set(g.pitch, g.opacity);
+  }
 
   return (
     <svg
@@ -102,9 +110,32 @@ export default function PianoKeyboard({ activeNotes }: Props) {
       aria-label="Piano keyboard"
       style={{ display: "block" }}
     >
+      <defs>
+        <linearGradient id="piano-active-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#000000" />
+          <stop offset="1%"   stopColor="#ddb6ff" />
+          <stop offset="3%"   stopColor="#000000" />
+          <stop offset="4%"   stopColor="#a21caf" />
+          <stop offset="17%"  stopColor="#3d0040" />
+          <stop offset="19%"  stopColor="#000000" />
+          <stop offset="20%"  stopColor="#5b21b6" />
+          <stop offset="33%"  stopColor="#1e0a3c" />
+          <stop offset="35%"  stopColor="#000000" />
+          <stop offset="36%"  stopColor="#0f766e" />
+          <stop offset="49%"  stopColor="#042f2e" />
+          <stop offset="51%"  stopColor="#000000" />
+          <stop offset="52%"  stopColor="#065f46" />
+          <stop offset="68%"  stopColor="#022c22" />
+          <stop offset="70%"  stopColor="#000000" />
+          <stop offset="71%"  stopColor="#052e16" />
+          <stop offset="100%" stopColor="#000000" />
+        </linearGradient>
+      </defs>
+
         {/* White keys — render first so black keys appear on top */}
         {whites.map((key) => {
           const active = activeSet.has(key.midi);
+          const ghostOpacity = !active ? ghostMap.get(key.midi) : undefined;
           return (
             <g key={key.midi}>
               <rect
@@ -113,9 +144,10 @@ export default function PianoKeyboard({ activeNotes }: Props) {
                 width={WHITE_W - 1}
                 height={WHITE_H - 1}
                 rx={3}
-                fill={active ? "#6366f1" : "#ffffff"}
-                stroke={active ? "#4338ca" : "#a1a1aa"}
+                fill={active ? "url(#piano-active-grad)" : ghostOpacity !== undefined ? "#6366f1" : "#ffffff"}
+                stroke={active ? "#7c3aed" : ghostOpacity !== undefined ? "#4338ca" : "#a1a1aa"}
                 strokeWidth={1}
+                opacity={ghostOpacity !== undefined ? ghostOpacity : 1}
               />
               {/* Label */}
               {active && (
@@ -133,7 +165,7 @@ export default function PianoKeyboard({ activeNotes }: Props) {
                 </text>
               )}
               {/* Always show C note labels on white C keys even when not active */}
-              {!active && key.midi % 12 === 0 && (
+              {!active && ghostOpacity === undefined && key.midi % 12 === 0 && (
                 <text
                   x={key.x + WHITE_W / 2}
                   y={WHITE_H - 10}
@@ -153,6 +185,7 @@ export default function PianoKeyboard({ activeNotes }: Props) {
         {/* Black keys — rendered on top */}
         {blacks.map((key) => {
           const active = activeSet.has(key.midi);
+          const ghostOpacity = !active ? ghostMap.get(key.midi) : undefined;
           return (
             <g key={key.midi}>
               <rect
@@ -161,9 +194,10 @@ export default function PianoKeyboard({ activeNotes }: Props) {
                 width={BLACK_W - 1}
                 height={BLACK_H - 1}
                 rx={2}
-                fill={active ? "#6366f1" : "#18181b"}
-                stroke={active ? "#4338ca" : "#3f3f46"}
+                fill={active ? "url(#piano-active-grad)" : ghostOpacity !== undefined ? "#6366f1" : "#18181b"}
+                stroke={active ? "#7c3aed" : ghostOpacity !== undefined ? "#4338ca" : "#3f3f46"}
                 strokeWidth={1}
+                opacity={ghostOpacity !== undefined ? ghostOpacity : 1}
               />
               {active && (
                 <text
