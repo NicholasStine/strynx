@@ -1,6 +1,7 @@
 "use client";
 
 import MidiImport from "@/components/MidiImport";
+import ExampleSongs from "@/components/ExampleSongs";
 import MidiCleanup from "@/components/MidiCleanup";
 import PlaybackControls from "@/components/PlaybackControls";
 import PianoView from "@/components/piano/PianoView";
@@ -41,6 +42,7 @@ export default function Home() {
             Load MIDI File
           </h2>
           <MidiImport />
+          <ExampleSongs />
         </section>
 
         {/* Playback controls + instrument view — only shown after MIDI is loaded */}
