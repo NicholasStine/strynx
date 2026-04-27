@@ -23,6 +23,9 @@ export default function PlaybackControls() {
     loopEnd,
     loopEnabled,
     audioEnabled,
+    quantizeEnabled,
+    quantizeSubdivision,
+    quantizeStrength,
     play,
     pause,
     seek,
@@ -31,6 +34,9 @@ export default function PlaybackControls() {
     setLoop,
     toggleLoop,
     toggleAudio,
+    toggleQuantize,
+    setQuantizeSubdivision,
+    setQuantizeStrength,
   } = usePlaybackStore();
 
   const [scrubbing, setScrubbing] = useState(false);
@@ -128,7 +134,7 @@ export default function PlaybackControls() {
             Transpose
           </span>
           <button
-            onClick={() => setTranspose(Math.max(-12, transpose - 1))}
+            onClick={() => setTranspose(Math.max(-21, transpose - 1))}
             className="flex h-6 w-6 items-center justify-center rounded bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
           >
             −
@@ -137,11 +143,59 @@ export default function PlaybackControls() {
             {transpose > 0 ? `+${transpose}` : transpose}
           </span>
           <button
-            onClick={() => setTranspose(Math.min(12, transpose + 1))}
+            onClick={() => setTranspose(Math.min(21, transpose + 1))}
             className="flex h-6 w-6 items-center justify-center rounded bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
           >
             +
           </button>
+        </div>
+
+        {/* Quantize */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleQuantize}
+            className={`rounded px-2 py-0.5 text-xs font-medium transition ${
+              quantizeEnabled
+                ? "bg-indigo-600 text-white"
+                : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
+            }`}
+          >
+            Quantize
+          </button>
+          {quantizeEnabled && (
+            <>
+              {/* Subdivision */}
+              <div className="flex gap-0.5">
+                {([4, 8, 16] as const).map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setQuantizeSubdivision(n)}
+                    className={`rounded px-1.5 py-0.5 text-xs font-medium transition ${
+                      quantizeSubdivision === n
+                        ? "bg-indigo-500 text-white"
+                        : "bg-zinc-200 text-zinc-600 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600"
+                    }`}
+                  >
+                    1/{n}
+                  </button>
+                ))}
+              </div>
+              {/* Strength */}
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={quantizeStrength}
+                onChange={(e) => setQuantizeStrength(Number(e.target.value))}
+                className="w-20 cursor-pointer accent-indigo-600"
+                aria-label="Quantize strength"
+              />
+              <span className="w-8 font-mono text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
+                {Math.round(quantizeStrength * 100)}%
+              </span>
+            </>
+          )}
         </div>
 
         {/* Audio toggle */}

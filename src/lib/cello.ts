@@ -16,24 +16,37 @@ export type CelloFingering = {
   position: number;    // semitones above open string (0 = open)
 };
 
+export const CELLO_MAX_POSITION = 7;
+
 /**
- * Maps a MIDI pitch to the most natural cello string and finger position.
- * Prefers the highest string where the note falls within first position
- * (≤ 12 semitones above open). Extends onto the A string beyond that.
- * Returns null for pitches below C2 (MIDI 36).
+ * Semitone span reachable on a single string for a given hand position.
+ * Position 1: [0, 7] (open through 4th finger, ~a fifth).
+ * Each subsequent position shifts the window up by 2 semitones.
  */
-export function pitchToFingering(pitch: number): CelloFingering | null {
-  // Try from highest string (A=3) to lowest (C=0)
-  for (let s = 3; s >= 0; s--) {
-    const pos = pitch - CELLO_STRINGS[s].openPitch;
-    if (pos >= 0 && pos <= 12) {
-      return { stringIndex: s, position: pos };
+export function positionSemitoneRange(position: number): [number, number] {
+  const start = Math.max(0, (position - 1) * 2);
+  return [start, start + 7];
+}
+
+/**
+ * Maps a MIDI pitch to cello string and finger position within the given
+ * position range. Iterates positions from lowest to highest (strongly
+ * prefers first position), and within each position prefers the highest-
+ * tuned string (A > D > G > C). Returns null if unreachable in range.
+ */
+export function pitchToFingering(
+  pitch: number,
+  positionRange: [number, number] = [1, 1],
+): CelloFingering | null {
+  const [minPos, maxPos] = positionRange;
+  for (let pos = minPos; pos <= maxPos; pos++) {
+    const [semMin, semMax] = positionSemitoneRange(pos);
+    for (let s = 3; s >= 0; s--) {
+      const semitonesAboveOpen = pitch - CELLO_STRINGS[s].openPitch;
+      if (semitonesAboveOpen >= semMin && semitonesAboveOpen <= semMax) {
+        return { stringIndex: s, position: semitonesAboveOpen };
+      }
     }
-  }
-  // Extend onto A string for higher positions (thumb position territory)
-  const aPos = pitch - CELLO_STRINGS[3].openPitch;
-  if (aPos > 12 && aPos <= 36) {
-    return { stringIndex: 3, position: aPos };
   }
   return null;
 }

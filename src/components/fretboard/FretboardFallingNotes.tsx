@@ -69,7 +69,8 @@ export default function FretboardFallingNotes({
       const x = cx - NOTE_W / 2;
 
       // y=0 is top (future), y=FALL_HEIGHT is the "now" line
-      const yBottom = FALL_HEIGHT * (1 - (note.startMs - currentMs) / LOOKAHEAD_MS);
+      // Use chord.startMs so all notes in a chord align at the same vertical position
+      const yBottom = FALL_HEIGHT * (1 - (chord.startMs - currentMs) / LOOKAHEAD_MS);
       const yTop = FALL_HEIGHT * (1 - (note.endMs - currentMs) / LOOKAHEAD_MS);
 
       const rawH = Math.max(MIN_NOTE_H, yBottom - yTop);
@@ -80,7 +81,7 @@ export default function FretboardFallingNotes({
       const clippedH = clippedBottom - clippedY;
       if (clippedH <= 0) continue;
 
-      const isActive = currentMs >= note.startMs && currentMs < note.endMs;
+      const isActive = currentMs >= chord.startMs && currentMs < note.endMs;
 
       blocks.push({
         key: `${pitch}-${note.startMs}-${ni}`,

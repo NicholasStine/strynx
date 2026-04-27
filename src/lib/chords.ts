@@ -16,7 +16,7 @@ export type ChordEvent = {
  * @param events  - MidiEvent array (should be quantized first)
  * @param windowMs - max onset difference to group as a chord (default 20 ms)
  */
-export function detectChords(events: MidiEvent[], windowMs = 20): ChordEvent[] {
+export function detectChords(events: MidiEvent[], windowMs = 50): ChordEvent[] {
   if (events.length === 0) return [];
 
   const sorted = [...events].sort((a, b) => a.startMs - b.startMs);

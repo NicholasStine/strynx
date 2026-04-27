@@ -1,6 +1,7 @@
 "use client";
 
 import MidiImport from "@/components/MidiImport";
+import MidiCleanup from "@/components/MidiCleanup";
 import PlaybackControls from "@/components/PlaybackControls";
 import PianoView from "@/components/piano/PianoView";
 import CelloView from "@/components/cello/CelloView";
@@ -45,6 +46,12 @@ export default function Home() {
         {/* Playback controls + instrument view — only shown after MIDI is loaded */}
         {hasEvents && (
           <>
+            <section className="mb-10">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                Cleanup
+              </h2>
+              <MidiCleanup />
+            </section>
             <section className="mb-10">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
                 Playback

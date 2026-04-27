@@ -4,13 +4,18 @@ import { useMemo } from "react";
 import { usePlaybackStore } from "@/store/playback";
 import PianoKeyboard from "./PianoKeyboard";
 import FallingNotes from "./FallingNotes";
+import type { MidiEvent } from "@/lib/midi";
+
+const GHOST_COUNT = 4;
+const GHOST_OPACITIES = [0.68, 0.48, 0.30, 0.16] as const;
+const GHOST_GROUP_WINDOW_MS = 15;
 
 export default function PianoView() {
-  const { events, currentMs, transpose } = usePlaybackStore();
+  const { quantizedEvents, currentMs, transpose } = usePlaybackStore();
 
   const activeNotes = useMemo(() => {
     const active: number[] = [];
-    for (const event of events) {
+    for (const event of quantizedEvents) {
       if (currentMs >= event.startMs && currentMs < event.endMs) {
         // Clamp transposed pitch to 88-key range (MIDI 21–108)
         const pitch = Math.max(21, Math.min(108, event.pitch + transpose));
@@ -18,7 +23,31 @@ export default function PianoView() {
       }
     }
     return active;
-  }, [events, currentMs, transpose]);
+  }, [quantizedEvents, currentMs, transpose]);
+
+  const ghostNotes = useMemo(() => {
+    const upcoming = quantizedEvents
+      .filter((e) => e.startMs > currentMs)
+      .sort((a, b) => a.startMs - b.startMs);
+
+    const groups: MidiEvent[][] = [];
+    for (const event of upcoming) {
+      if (groups.length >= GHOST_COUNT) break;
+      const lastGroup = groups[groups.length - 1];
+      if (!lastGroup || event.startMs - lastGroup[0].startMs > GHOST_GROUP_WINDOW_MS) {
+        groups.push([event]);
+      } else {
+        lastGroup.push(event);
+      }
+    }
+
+    return groups.flatMap((group, i) =>
+      group.map((e) => ({
+        pitch: Math.max(21, Math.min(108, e.pitch + transpose)),
+        opacity: GHOST_OPACITIES[i],
+      }))
+    );
+  }, [quantizedEvents, currentMs, transpose]);
 
   return (
     <div className="w-full">
@@ -34,14 +63,14 @@ export default function PianoView() {
       {/* Shared horizontal scroll container — keeps falling notes and keyboard aligned */}
       <div className="w-full overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
         <FallingNotes
-          events={events}
+          events={quantizedEvents}
           currentMs={currentMs}
           transpose={transpose}
         />
         {/* 3px gap between falling notes and keyboard */}
         <div style={{ height: 3, background: "transparent" }} />
         <div className="px-3 pb-3">
-          <PianoKeyboard activeNotes={activeNotes} />
+          <PianoKeyboard activeNotes={activeNotes} ghostNotes={ghostNotes} />
         </div>
       </div>
     </div>

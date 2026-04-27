@@ -86,12 +86,20 @@ function buildKeys(): { whites: KeyInfo[]; blacks: KeyInfo[] } {
 
 const { whites, blacks } = buildKeys();
 
+type GhostNote = { pitch: number; opacity: number };
+
 type Props = {
   activeNotes: number[];
+  ghostNotes?: GhostNote[];
 };
 
-export default function PianoKeyboard({ activeNotes }: Props) {
+export default function PianoKeyboard({ activeNotes, ghostNotes = [] }: Props) {
   const activeSet = new Set(activeNotes);
+  const ghostMap = new Map<number, number>();
+  for (const g of ghostNotes) {
+    const existing = ghostMap.get(g.pitch);
+    if (existing === undefined || g.opacity > existing) ghostMap.set(g.pitch, g.opacity);
+  }
 
   return (
     <svg
@@ -105,6 +113,7 @@ export default function PianoKeyboard({ activeNotes }: Props) {
         {/* White keys — render first so black keys appear on top */}
         {whites.map((key) => {
           const active = activeSet.has(key.midi);
+          const ghostOpacity = !active ? ghostMap.get(key.midi) : undefined;
           return (
             <g key={key.midi}>
               <rect
@@ -113,9 +122,10 @@ export default function PianoKeyboard({ activeNotes }: Props) {
                 width={WHITE_W - 1}
                 height={WHITE_H - 1}
                 rx={3}
-                fill={active ? "#6366f1" : "#ffffff"}
-                stroke={active ? "#4338ca" : "#a1a1aa"}
+                fill={active ? "#10b981" : ghostOpacity !== undefined ? "#6366f1" : "#ffffff"}
+                stroke={active ? "#059669" : ghostOpacity !== undefined ? "#4338ca" : "#a1a1aa"}
                 strokeWidth={1}
+                opacity={ghostOpacity !== undefined ? ghostOpacity : 1}
               />
               {/* Label */}
               {active && (
@@ -133,7 +143,7 @@ export default function PianoKeyboard({ activeNotes }: Props) {
                 </text>
               )}
               {/* Always show C note labels on white C keys even when not active */}
-              {!active && key.midi % 12 === 0 && (
+              {!active && ghostOpacity === undefined && key.midi % 12 === 0 && (
                 <text
                   x={key.x + WHITE_W / 2}
                   y={WHITE_H - 10}
@@ -153,6 +163,7 @@ export default function PianoKeyboard({ activeNotes }: Props) {
         {/* Black keys — rendered on top */}
         {blacks.map((key) => {
           const active = activeSet.has(key.midi);
+          const ghostOpacity = !active ? ghostMap.get(key.midi) : undefined;
           return (
             <g key={key.midi}>
               <rect
@@ -161,9 +172,10 @@ export default function PianoKeyboard({ activeNotes }: Props) {
                 width={BLACK_W - 1}
                 height={BLACK_H - 1}
                 rx={2}
-                fill={active ? "#6366f1" : "#18181b"}
-                stroke={active ? "#4338ca" : "#3f3f46"}
+                fill={active ? "#10b981" : ghostOpacity !== undefined ? "#6366f1" : "#18181b"}
+                stroke={active ? "#059669" : ghostOpacity !== undefined ? "#4338ca" : "#3f3f46"}
                 strokeWidth={1}
+                opacity={ghostOpacity !== undefined ? ghostOpacity : 1}
               />
               {active && (
                 <text

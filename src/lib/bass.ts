@@ -22,13 +22,15 @@ export const BASS_STRINGS = [
  */
 export function getFretPosition(
   pitch: number,
-  tuning: readonly { openPitch: number }[] = BASS_STRINGS
+  tuning: readonly { openPitch: number }[] = BASS_STRINGS,
+  fretRange: [number, number] = [0, 24]
 ): FretPosition | null {
+  const [minFret, maxFret] = fretRange;
   let best: FretPosition | null = null;
 
   for (let s = 0; s < tuning.length; s++) {
     const fret = pitch - tuning[s].openPitch;
-    if (fret < 0 || fret > 24) continue;
+    if (fret < minFret || fret > maxFret) continue;
     if (
       best === null ||
       fret < best.fret ||

@@ -59,13 +59,13 @@ describe("detectChords", () => {
   });
 
   it("respects window boundary exactly", () => {
-    const events = [makeEvent(0, 500, 60), makeEvent(20, 500, 64)];
-    // window = 20: startMs difference = 20 which is <= 20, so grouped
-    const grouped = detectChords(events, 20);
+    const events = [makeEvent(0, 500, 60), makeEvent(50, 500, 64)];
+    // window = 50: difference = 50 which is <= 50, so grouped
+    const grouped = detectChords(events, 50);
     expect(grouped).toHaveLength(1);
 
-    // window = 19: startMs difference = 20 which is > 19, so separated
-    const separated = detectChords(events, 19);
+    // window = 49: difference = 50 which is > 49, so separated
+    const separated = detectChords(events, 49);
     expect(separated).toHaveLength(2);
   });
 });

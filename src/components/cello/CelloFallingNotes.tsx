@@ -19,9 +19,10 @@ type Props = {
   events: MidiEvent[];
   currentMs: number;
   transpose: number;
+  positionRange?: [number, number];
 };
 
-export default function CelloFallingNotes({ events, currentMs, transpose }: Props) {
+export default function CelloFallingNotes({ events, currentMs, transpose, positionRange = [1, 1] }: Props) {
   const visibleEnd = currentMs + LOOKAHEAD_MS;
 
   return (
@@ -69,7 +70,7 @@ export default function CelloFallingNotes({ events, currentMs, transpose }: Prop
         .filter((e) => e.startMs < visibleEnd && e.endMs > currentMs)
         .map((event, i) => {
           const pitch = event.pitch + transpose;
-          const fingering = pitchToFingering(pitch);
+          const fingering = pitchToFingering(pitch, positionRange);
           if (!fingering) return null;
 
           const cx = CELLO_STRING_X[fingering.stringIndex];
